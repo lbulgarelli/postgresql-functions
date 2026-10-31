@@ -10,6 +10,7 @@ AS
 $$
 -- Each pattern is anchored (^ ... $) so the whole value must match.
 -- The capture group (...) is what SUBSTRING returns. No match gives NULL.
+-- A minus sign right before the digits is part of the number: -4 stays -4.
 SELECT
     CASE
       -- no digits at all -> NULL
@@ -18,12 +19,12 @@ SELECT
 
       WHEN dtype = 'integer'
         AND TRANSLATE(ord_value, '0123456789', '') NOT IN ('')
-        THEN SUBSTRING(ord_value FROM '^[^\d.]*(\d+)\D*$')
+        THEN SUBSTRING(ord_value FROM '^[^\d.-]*(-?\d+)\D*$')
 
       WHEN
         dtype = 'decimal'
         AND TRANSLATE(ord_value, '0123456789', '') NOT IN ('', '.')
-        THEN SUBSTRING(ord_value FROM '^[^\d.]*(\d*\.?\d+)\D*$')
+        THEN SUBSTRING(ord_value FROM '^[^\d.-]*(-?\d*\.?\d+)\D*$')
 
       WHEN
         dtype = 'fraction'
