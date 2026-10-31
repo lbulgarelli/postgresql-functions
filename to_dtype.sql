@@ -31,6 +31,17 @@ SELECT
         AND TRANSLATE(ord_value, '0123456789', '') NOT IN ('/')
         THEN SUBSTRING(ord_value FROM '^[^\d.]*(\d+/\d+)\D*$')
 
+      -- a number, or a fraction written as a number such as 1/2 Lpm: 0.5
+      WHEN dtype = 'quantity'
+        THEN COALESCE(
+            SUBSTRING(ord_value FROM '^[^\d.-]*(-?\d*\.?\d+)\D*$')
+          , ROUND(
+                (REGEXP_MATCH(ord_value, '^[^\d.]*(\d+)/(\d+)\D*$'))[1]::NUMERIC
+                / NULLIF((REGEXP_MATCH(ord_value, '^[^\d.]*(\d+)/(\d+)\D*$'))[2]::NUMERIC, 0)
+              , 6
+            )::TEXT
+          )
+
       ELSE ord_value
     END
 $$
